@@ -16,9 +16,21 @@ namespace ConsoleApp
         private bool IsFrozen { get; set; }
 
         private Action OnUnfreeze { get; }
+        private Action ManageUnfreezing { get; set; }
         public Account (Action onUnfreeze)
         {
             this.OnUnfreeze = onUnfreeze;
+            this.ManageUnfreezing = () =>
+            {
+                if (this.IsFrozen)
+                {
+                    this.Unfreeze();
+                }
+                else
+                {
+                    this.StayUnfrozen();
+                }
+            };
         }
         // #1 negative case:  Deposit 10, Close, Deposit 1, Balance = 10
         // #2 positive case:  Deposit 10, Deposit 1, Balance = 11
@@ -29,11 +41,7 @@ namespace ConsoleApp
         {
             if (this.IsClosed)
                 return;
-            if(this.IsFrozen)
-            {
-                this.IsFrozen = false;
-                this.OnUnfreeze();
-            }
+            this.ManageUnfreezing();
             //deposit money
             this.Balance += amount;
         }
@@ -51,11 +59,7 @@ namespace ConsoleApp
                 return; //or do something
             if (this.IsClosed)
                 return;
-            if (this.IsFrozen) //repetido y requiere su own brand-new test #9 y #10
-            {
-                this.IsFrozen = false;
-                this.OnUnfreeze();
-            }
+            ManageUnfreezing();
             //withdraw mone
             this.Balance -= amount;
         }
@@ -76,6 +80,16 @@ namespace ConsoleApp
             if (!this.IsVerified)
                 return;
             this.IsFrozen = true;
+        }
+
+        private void Unfreeze()
+        {
+            this.IsFrozen = false;
+            this.OnUnfreeze();
+        }
+        private void StayUnfrozen()
+        {
+
         }
     }
 }
