@@ -41,17 +41,17 @@ namespace ConsoleApp
         //#3: Deposit 10, withdraw 1, Balance =10
         //#4:  Deposit 10, Verify, Close, Withdraw 1, Balance = 10
         //#5 Deposit 10, Verify, Withdraw 1, Balance = 9
-      
-
         //#9: Deposit 10, Verify, Freeze, Withdraw 1, IsFrozen = false
         //#10: Deposit 10, Verify, Freeze, Withdraw 1, IsFrozen = false
+        //#11: Deposit 10, Verify, Withdraw 1, OnUnfreeze was not called
+        //sure that OnUnfreeze callback was not invoke on an account wich was not frozen before
         public void Withdraw(decimal amount)
         {
             if (!this.IsVerified)
                 return; //or do something
             if (this.IsClosed)
                 return;
-            if (this.IsFrozen) //repetido y requiere su own brand-new test  #10
+            if (this.IsFrozen) //repetido y requiere su own brand-new test #9 y #10
             {
                 this.IsFrozen = false;
                 this.OnUnfreeze();
