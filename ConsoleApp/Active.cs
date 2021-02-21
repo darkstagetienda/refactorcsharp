@@ -4,21 +4,29 @@ using System.Text;
 
 namespace ConsoleApp
 {
-    class Active : IFreezable
+    class Active : IAccountState
     {
-        public IFreezable Deposit()
+        private Action OnUnfreeze;
+
+        public Active(Action onUnfreeze)
         {
-            throw new NotImplementedException();
+            this.OnUnfreeze = onUnfreeze;
+        }
+        public IAccountState Deposit(Action addToBalance)
+        {
+            addToBalance();
+            return this;
         }
 
-        public IFreezable Freeze()
-        {
-            throw new NotImplementedException();
-        }
 
-        public IFreezable Withdraw()
+        public IAccountState Freeze() => new Frozen(this.OnUnfreeze);
+
+
+        public IAccountState Withdraw(Action subtractFromBalance)
         {
-            throw new NotImplementedException();
+            subtractFromBalance();
+            return this;
         }
+        public IAccountState HolderVerified() => this;
     }
 }

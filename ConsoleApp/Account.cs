@@ -16,14 +16,12 @@ namespace ConsoleApp
         ///- another way is to pause the test and actually increase the balance. line 21
     {
         public decimal Balance { get; private set; }
-        private bool IsVerified { get; set; }
-        private bool IsClosed { get; set; }
-
+    
         
-        private IFreezable Freezable { get; set; }
+        private IAccountState state { get; set; }
         public Account (Action onUnfreeze)
         {
-            this.Freezable = new Active(onUnfreeze);
+            this.state = new NotVerified(onUnfreeze);
         }
         // #1 negative case:  Deposit 10, Close, Deposit 1, Balance = 10
         // #2 positive case:  Deposit 10, Deposit 1, Balance = 11
@@ -32,11 +30,12 @@ namespace ConsoleApp
         //#8 Depost 10, Deposit 1, OnUnFreeze was not called 
         public void Deposit(decimal amount)
         {
-            if (this.IsClosed)
+            /*if (this.IsClosed)
                 return;
             this.Freezable = this.Freezable.Deposit();
-            //deposit money
             this.Balance += amount;
+            */
+            this.state = this.state.Deposit(() => { this.Balance += amount; });
         }
 
         //#3: Deposit 10, withdraw 1, Balance =10
@@ -48,31 +47,35 @@ namespace ConsoleApp
         //sure that OnUnfreeze callback was not invoke on an account wich was not frozen before
         public void Withdraw(decimal amount)
         {
-            if (!this.IsVerified)
+            /*if (!this.IsVerified)
                 return; //or do something
             if (this.IsClosed)
                 return;
             this.Freezable = this.Freezable.Withdraw();
-            //withdraw mone
             this.Balance -= amount;
+            */
+            this.state = this.state.Withdraw(() => { this.Balance -= amount; });
+            ;
         }
 
         public void HoldVerified()
         {
-            this.IsVerified = true;
+            this.state = this.state.HolderVerified();
         }
 
         public void Close()
         {
-            this.IsClosed = true;
+            this.state = this.state.Close();
         }
         public void Freeze()
         {
-            if (this.IsClosed)
+            /*if (this.IsClosed)
                 return;
             if (!this.IsVerified)
                 return;
             this.Freezable = this.Freezable.Freeze();
+            */
+            this.state = this.state.Freeze();
         }
 
 
