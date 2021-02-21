@@ -6,6 +6,11 @@ namespace ConsoleApp
 {
     public class Account //testing the account state is explicit
 
+        //consequences of the state pattern
+        //class doesn't have to represente its state explicitly anymore
+        //class doesn't have to manage state transition logic
+
+
         ///how many ways there are to execute the deposit method?
         ///-drop line 17
         ///- another way is to pause the test and actually increase the balance. line 21
@@ -13,24 +18,12 @@ namespace ConsoleApp
         public decimal Balance { get; private set; }
         private bool IsVerified { get; set; }
         private bool IsClosed { get; set; }
-        private bool IsFrozen { get; set; }
 
-        private Action OnUnfreeze { get; }
-        private Action ManageUnfreezing { get; set; }
+        
+        private IFreezable Freezable { get; set; }
         public Account (Action onUnfreeze)
         {
-            this.OnUnfreeze = onUnfreeze;
-            this.ManageUnfreezing = () =>
-            {
-                if (this.IsFrozen)
-                {
-                    this.Unfreeze();
-                }
-                else
-                {
-                    this.StayUnfrozen();
-                }
-            };
+            this.Freezable = new Active(onUnfreeze);
         }
         // #1 negative case:  Deposit 10, Close, Deposit 1, Balance = 10
         // #2 positive case:  Deposit 10, Deposit 1, Balance = 11
@@ -41,7 +34,7 @@ namespace ConsoleApp
         {
             if (this.IsClosed)
                 return;
-            this.ManageUnfreezing();
+            this.Freezable = this.Freezable.Deposit();
             //deposit money
             this.Balance += amount;
         }
@@ -59,7 +52,7 @@ namespace ConsoleApp
                 return; //or do something
             if (this.IsClosed)
                 return;
-            ManageUnfreezing();
+            this.Freezable = this.Freezable.Withdraw();
             //withdraw mone
             this.Balance -= amount;
         }
@@ -79,17 +72,9 @@ namespace ConsoleApp
                 return;
             if (!this.IsVerified)
                 return;
-            this.IsFrozen = true;
+            this.Freezable = this.Freezable.Freeze();
         }
 
-        private void Unfreeze()
-        {
-            this.IsFrozen = false;
-            this.OnUnfreeze();
-        }
-        private void StayUnfrozen()
-        {
 
-        }
     }
 }
